@@ -5,13 +5,14 @@
 // próximo passo e rodapé.
 //
 // Paleta e estrutura do cabeçalho seguem exatamente o padrão do Gerador de
-// Propostas Runner (mesma identidade visual da agência): badge "R" +
-// wordmark em vez do PNG da logo, porque este documento também é
-// exportado como HTML autocontido — um <img> apontando para /public
-// quebraria fora do app.
+// Propostas Runner (mesma identidade visual da agência). A logo usa uma
+// data URI (runnerLogoDataUri.ts) em vez de um <img src="/...png"> normal
+// porque este documento também é exportado como HTML autocontido — um
+// caminho relativo a /public quebraria fora do app.
 
 import { DEFAULT_TEXTS } from "@/lib/defaultData";
 import type { Diagnostic, PointImage } from "@/lib/types";
+import { RUNNER_LOGO_DATA_URI } from "./runnerLogoDataUri";
 
 const INK = "#082a3e";
 const ACCENT = "#09b1c2";
@@ -154,20 +155,9 @@ export function PreviewDocument({ diagnostic: d }: PreviewDocumentProps) {
           className="avoid-break flex items-start justify-between gap-4 px-8 py-8 text-white sm:px-11"
           style={{ backgroundColor: INK }}
         >
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-2xl font-extrabold"
-              style={{ backgroundColor: ACCENT }}
-            >
-              R
-            </div>
-            <div className="leading-tight">
-              <div className="text-xl font-extrabold tracking-tight">RUNNER</div>
-              <div className="text-[10px] font-semibold tracking-[0.3em] uppercase" style={{ color: ACCENT }}>
-                Marketing
-              </div>
-            </div>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={RUNNER_LOGO_DATA_URI} alt="Runner Marketing" className="h-9 w-auto shrink-0" />
+
           <div className="text-right">
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: ACCENT }}>
               Diagnóstico rápido

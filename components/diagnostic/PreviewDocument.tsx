@@ -128,13 +128,13 @@ export function PreviewDocument({ diagnostic: d }: PreviewDocumentProps) {
           </div>
 
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-semibold text-[#082a3e]">Diagnóstico rápido de Instagram</h1>
+            <h1 className="text-2xl font-semibold text-[#082a3e] sm:text-3xl">Diagnóstico rápido de Instagram</h1>
             <p className="max-w-lg text-sm text-[#4b5563]">
               Pontos de risco e oportunidades para melhorar a percepção do perfil e gerar mais contatos.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-1 rounded-2xl border border-[#e5e7eb] bg-white p-5 text-sm text-[#111827] sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-1.5 rounded-2xl border border-[#e5e7eb] bg-white p-5 text-sm text-[#111827] sm:grid-cols-3">
             <span>
               <b>Cliente:</b> {d.clientName || "—"}
             </span>
@@ -157,7 +157,7 @@ export function PreviewDocument({ diagnostic: d }: PreviewDocumentProps) {
         <section>
           <SectionTitle eyebrow="Resumo" title="Resumo rápido" />
           <p className="mb-4 text-sm leading-relaxed text-[#4b5563]">{DEFAULT_TEXTS.summaryIntro}</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
               <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
                 Primeira impressão

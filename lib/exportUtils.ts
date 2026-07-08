@@ -68,6 +68,7 @@ export function exportDiagnosticAsHtml(diagnostic: Diagnostic, previewElement: H
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Diagnóstico — ${diagnostic.clientName || "Cliente"} — Runner Insight</title>
 <style>${css}</style>
 </head>

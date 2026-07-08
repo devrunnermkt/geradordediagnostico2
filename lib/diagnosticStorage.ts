@@ -6,7 +6,10 @@
 import { createEmptyDiagnostic, createId } from "./defaultData";
 import type { Diagnostic, DiagnosticSummary } from "./types";
 
-const STORAGE_KEY = "runner-insight-diagnostics";
+// v2: modelo de dados simplificado (summary/risks/improvements em vez das
+// antigas análises por página) — chave nova pra não carregar diagnósticos
+// salvos no formato antigo, que quebrariam a UI enxuta.
+const STORAGE_KEY = "runner-insight-diagnostics-v2";
 
 type DiagnosticMap = Record<string, Diagnostic>;
 

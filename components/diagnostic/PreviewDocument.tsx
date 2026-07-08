@@ -1,96 +1,36 @@
-// Template visual das 14 páginas do diagnóstico final — usado tanto na
-// prévia em tela quanto na impressão/exportação em PDF (via window.print)
-// e na exportação em HTML. Cada <section className="printPage"> é uma
-// página A4 (ver regras de impressão em app/globals.css).
+// Template visual do diagnóstico rápido — um único documento fluido (não
+// mais páginas fixas), usado na prévia em tela, na impressão/PDF (via
+// window.print, ver app/globals.css) e na exportação em HTML. Sete seções:
+// cabeçalho, resumo, imagens, riscos, melhorias, próximo passo e rodapé.
 
-import type { ReactNode } from "react";
-import {
-  CONTENT_FORMAT_OPTIONS,
-  CONTENT_OBJECTIVE_OPTIONS,
-  DEFAULT_TEXTS,
-} from "@/lib/defaultData";
+import { DEFAULT_TEXTS, IMAGE_TYPE_OPTIONS } from "@/lib/defaultData";
 import type { Diagnostic, DiagnosticImage } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 function formatarData(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
-function primeiraImagemDoTipo(images: DiagnosticImage[], tipo: string): DiagnosticImage | undefined {
-  return [...images].filter((i) => i.type === tipo).sort((a, b) => a.order - b.order)[0];
+function rotuloTipoImagem(tipo: string): string {
+  return IMAGE_TYPE_OPTIONS.find((t) => t.value === tipo)?.label ?? tipo;
 }
 
-function imagensDoTipo(images: DiagnosticImage[], tipos: string[]): DiagnosticImage[] {
-  return [...images].filter((i) => tipos.includes(i.type)).sort((a, b) => a.order - b.order);
-}
-
-function RunnerBrand({ light = false }: { light?: boolean }) {
+function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div
-      className={`text-xs font-semibold tracking-widest uppercase ${light ? "text-white/80" : "text-[#09b1c2]"}`}
-    >
-      Runner Marketing
+    <div className="mb-4">
+      <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">{eyebrow}</span>
+      <h2 className="text-2xl font-semibold text-[#082a3e]">{title}</h2>
     </div>
   );
 }
 
-function PageEyebrow({ children }: { children: ReactNode }) {
-  return (
-    <span className="mb-1 block text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">
-      {children}
-    </span>
-  );
-}
-
-function PageFooter({ page, title }: { page: number; title: string }) {
-  return (
-    <div className="mt-auto flex items-center justify-between border-t border-[#e5e7eb] pt-3 text-[10px] text-[#4b5563]">
-      <span>Runner Insight · Diagnóstico Estratégico de Instagram</span>
-      <span>
-        {title} · {String(page).padStart(2, "0")}/14
-      </span>
-    </div>
-  );
-}
-
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-1.5">
-      <span className="text-sm text-[#111827]">{label}</span>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <span
-            key={n}
-            className="h-2.5 w-6 rounded-full"
-            style={{ backgroundColor: n <= value ? "#082a3e" : "#e5e7eb" }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Paragraph({ children }: { children: ReactNode }) {
-  if (!children) return null;
-  return <p className="text-sm leading-relaxed text-[#111827] whitespace-pre-line">{children}</p>;
-}
-
-function FieldBlock({ label, value }: { label: string; value: string }) {
-  if (!value) return null;
-  return (
-    <div className="avoid-break flex flex-col gap-1">
-      <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">{label}</span>
-      <Paragraph>{value}</Paragraph>
-    </div>
-  );
-}
-
-function ImageFrame({ image, className = "" }: { image?: DiagnosticImage; className?: string }) {
+function ImageThumb({ image, className }: { image?: DiagnosticImage; className?: string }) {
   if (!image) return null;
   return (
-    <figure className={`avoid-break overflow-hidden rounded-2xl border border-[#e5e7eb] ${className}`}>
-      <div className="aspect-[4/3] w-full bg-cover bg-center" style={{ backgroundImage: `url(${image.src})` }} />
-      {image.caption && <figcaption className="px-3 py-2 text-xs text-[#4b5563]">{image.caption}</figcaption>}
-    </figure>
+    <div
+      className={cn("aspect-[4/3] w-full rounded-xl border border-[#e5e7eb] bg-cover bg-center", className)}
+      style={{ backgroundImage: `url(${image.src})` }}
+    />
   );
 }
 
@@ -99,315 +39,221 @@ interface PreviewDocumentProps {
 }
 
 export function PreviewDocument({ diagnostic: d }: PreviewDocumentProps) {
-  const imagemPerfil = primeiraImagemDoTipo(d.images, "profile") ?? primeiraImagemDoTipo(d.images, "cover");
-  const imagemBio = primeiraImagemDoTipo(d.images, "bio");
-  const imagensFeed = imagensDoTipo(d.images, ["feed"]);
-  const imagemDestaques = primeiraImagemDoTipo(d.images, "highlights");
-  const imagensConteudo = imagensDoTipo(d.images, ["post", "reels"]);
-
-  const pontosFortesSelecionados = d.strengths.filter((s) => s.title);
-  const pontosMelhoriaSelecionados = d.improvements.filter((i) => i.title);
-  const acoesSelecionadas = d.actionPlan.filter((item) => item.selected);
+  const imagemPerfil = [...d.images].sort((a, b) => a.order - b.order).find((i) => i.type === "profile");
+  const imagensOrdenadas = [...d.images].sort((a, b) => a.order - b.order);
+  const riscosOrdenados = [...d.risks].sort((a, b) => a.order - b.order);
+  const melhoriasOrdenadas = [...d.improvements].sort((a, b) => a.order - b.order);
+  const imagemPorId = (id: string | null) => (id ? d.images.find((i) => i.id === id) : undefined);
 
   return (
-    <div className="flex flex-col items-center bg-[#f7fbfc] py-10 print:bg-white print:py-0">
-      {/* Página 1 — Capa */}
-      <section className="printPage flex flex-col" style={{ backgroundColor: "#082a3e", color: "white" }}>
-        <RunnerBrand light />
-        <div className="flex flex-1 flex-col justify-center gap-6 py-16">
-          {imagemPerfil && (
-            <div
-              className="h-28 w-28 rounded-full border-4 border-white/20 bg-cover bg-center"
-              style={{ backgroundImage: `url(${imagemPerfil.src})` }}
-            />
-          )}
-          <div className="flex flex-col gap-3">
-            <span className="text-sm font-medium tracking-widest text-[#09b1c2] uppercase">
-              Análise Estratégica de Instagram
+    <div className="flex justify-center bg-[#f7fbfc] py-10 print:bg-white print:py-0">
+      <div className="printPage flex flex-col gap-10">
+        {/* Cabeçalho */}
+        <header className="avoid-break flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">
+              Runner Marketing
             </span>
-            <h1 className="text-4xl leading-tight font-semibold">{d.clientName || "Cliente"}</h1>
-            <p className="text-white/70">
-              {d.instagramHandle && `@${d.instagramHandle.replace(/^@/, "")}`}
-              {d.segment && ` · ${d.segment}`}
-              {d.city && ` · ${d.city}`}
-            </p>
+            <span className="text-xs text-[#4b5563]">Data da análise: {formatarData(d.createdAt)}</span>
           </div>
-          <p className="max-w-md text-sm leading-relaxed text-white/80">{DEFAULT_TEXTS.coverPositioning}</p>
-        </div>
-        <div className="flex items-center justify-between text-xs text-white/60">
-          <span>Data da análise: {formatarData(d.createdAt)}</span>
-          <span>Runner Insight</span>
-        </div>
-      </section>
 
-      {/* Página 2 — Objetivo da análise */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Objetivo da análise</h2>
-        <FieldBlock label="Objetivo do diagnóstico" value={d.analysisObjective.objective} />
-        <FieldBlock label="Resumo do que foi analisado" value={d.analysisObjective.summary} />
-        <PageFooter page={2} title="Objetivo da análise" />
-      </section>
+          <div className="flex items-center gap-6">
+            {imagemPerfil && (
+              <div
+                className="h-24 w-24 shrink-0 rounded-full border-4 border-[#e5e7eb] bg-cover bg-center"
+                style={{ backgroundImage: `url(${imagemPerfil.src})` }}
+              />
+            )}
+            <div className="flex flex-col gap-1">
+              <h1 className="text-3xl font-semibold text-[#082a3e]">Diagnóstico rápido de Instagram</h1>
+              <p className="max-w-lg text-sm text-[#4b5563]">
+                Pontos de risco e oportunidades para melhorar a percepção do perfil e gerar mais contatos.
+              </p>
+            </div>
+          </div>
 
-      {/* Página 3 — Visão geral do perfil */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Visão geral do perfil</h2>
-
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-[#111827]">
-          <span>
-            <b>Cliente:</b> {d.clientName}
-          </span>
-          <span>
-            <b>Instagram:</b> @{d.instagramHandle?.replace(/^@/, "")}
-          </span>
-          <span>
-            <b>Segmento:</b> {d.segment}
-          </span>
-          <span>
-            <b>Cidade:</b> {d.city}
-          </span>
-          <span className="col-span-2">
-            <b>Objetivo principal do perfil:</b> {d.profileObjective}
-          </span>
-        </div>
-
-        <FieldBlock label="Primeira impressão" value={d.generalAnalysis.firstImpression} />
-        <FieldBlock label="Potencial percebido" value={d.generalAnalysis.perceivedPotential} />
-        <FieldBlock label="Maior oportunidade" value={d.generalAnalysis.mainOpportunity} />
-
-        <div className="avoid-break rounded-2xl border border-[#e5e7eb] bg-white p-5">
-          <ScoreBar label="Clareza do perfil" value={d.scores.clarity} />
-          <ScoreBar label="Identidade visual" value={d.scores.visualIdentity} />
-          <ScoreBar label="Autoridade" value={d.scores.authority} />
-          <ScoreBar label="Humanização" value={d.scores.humanization} />
-          <ScoreBar label="Conversão" value={d.scores.conversion} />
-          <ScoreBar label="Consistência de conteúdo" value={d.scores.consistency} />
-        </div>
-        <PageFooter page={3} title="Visão geral do perfil" />
-      </section>
-
-      {/* Página 4 — Análise da bio */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Análise da bio</h2>
-        <p className="text-sm text-[#4b5563] italic">{DEFAULT_TEXTS.bioSupport}</p>
-        <ImageFrame image={imagemBio} className="max-w-xs" />
-        <FieldBlock label="Bio atual" value={d.bioAnalysis.currentBio} />
-        <FieldBlock label="Pontos positivos" value={d.bioAnalysis.positivePoints} />
-        <FieldBlock label="Pontos de melhoria" value={d.bioAnalysis.improvementPoints} />
-        <FieldBlock label="Sugestão de nova bio" value={d.bioAnalysis.suggestedBio} />
-        <FieldBlock label="Comentário estratégico" value={d.bioAnalysis.strategicComment} />
-        <PageFooter page={4} title="Análise da bio" />
-      </section>
-
-      {/* Página 5 — Diagnóstico visual */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Diagnóstico visual</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {imagensFeed.slice(0, 3).map((img) => (
-            <ImageFrame key={img.id} image={img} />
-          ))}
-        </div>
-        <FieldBlock label="Identidade visual" value={d.visualAnalysis.identityComment} />
-        <FieldBlock label="Harmonia do feed" value={d.visualAnalysis.feedHarmony} />
-        <FieldBlock label="Qualidade das imagens" value={d.visualAnalysis.imageQuality} />
-        <FieldBlock label="Profissionalismo percebido" value={d.visualAnalysis.professionalPerception} />
-        <FieldBlock label="Sugestão de direção visual" value={d.visualAnalysis.visualDirection} />
-        <PageFooter page={5} title="Diagnóstico visual" />
-      </section>
-
-      {/* Página 6 — Análise dos destaques */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Análise dos destaques</h2>
-        <ImageFrame image={imagemDestaques} className="max-w-xs" />
-        <FieldBlock label="Organização" value={d.highlightsAnalysis.organization} />
-        <FieldBlock label="Capas" value={d.highlightsAnalysis.covers} />
-        <FieldBlock label="Nomes dos destaques" value={d.highlightsAnalysis.names} />
-        <FieldBlock label="Comentário estratégico" value={d.highlightsAnalysis.strategicComment} />
-        {d.highlightsAnalysis.recommendedHighlights.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
-              Destaques recomendados
+          <div className="grid grid-cols-2 gap-x-8 gap-y-1 rounded-2xl border border-[#e5e7eb] bg-white p-5 text-sm text-[#111827] sm:grid-cols-3">
+            <span>
+              <b>Cliente:</b> {d.clientName || "—"}
             </span>
-            <div className="flex flex-wrap gap-2">
-              {d.highlightsAnalysis.recommendedHighlights.map((nome) => (
-                <span
-                  key={nome}
-                  className="rounded-full bg-[#09b1c2]/10 px-3 py-1 text-xs font-medium text-[#082a3e]"
-                >
-                  {nome}
-                </span>
+            <span>
+              <b>Instagram:</b> {d.instagramHandle ? `@${d.instagramHandle.replace(/^@/, "")}` : "—"}
+            </span>
+            <span>
+              <b>Segmento:</b> {d.segment || "—"}
+            </span>
+            <span>
+              <b>Cidade:</b> {d.city || "—"}
+            </span>
+            <span>
+              <b>Responsável:</b> {d.responsibleName || "—"}
+            </span>
+          </div>
+        </header>
+
+        {/* Resumo rápido */}
+        <section>
+          <SectionTitle eyebrow="Resumo" title="Resumo rápido" />
+          <p className="mb-4 text-sm leading-relaxed text-[#4b5563]">{DEFAULT_TEXTS.summaryIntro}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
+              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
+                Primeira impressão
+              </span>
+              <p className="mt-1 text-sm text-[#111827]">{d.summary.firstImpression || "—"}</p>
+            </div>
+            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
+              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
+                Maior risco percebido
+              </span>
+              <p className="mt-1 text-sm text-[#111827]">{d.summary.mainRisk || "—"}</p>
+            </div>
+            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
+              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
+                Maior oportunidade percebida
+              </span>
+              <p className="mt-1 text-sm text-[#111827]">{d.summary.mainOpportunity || "—"}</p>
+            </div>
+            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
+              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
+                Objetivo sugerido
+              </span>
+              <p className="mt-1 text-sm text-[#111827]">{d.summary.suggestedObjective || "—"}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Imagens do diagnóstico */}
+        {imagensOrdenadas.length > 0 && (
+          <section>
+            <SectionTitle eyebrow="Evidências" title="Imagens do diagnóstico" />
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {imagensOrdenadas.map((img) => (
+                <div key={img.id} className="avoid-break overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white">
+                  <ImageThumb image={img} className="rounded-none rounded-t-2xl border-0" />
+                  <div className="flex flex-col gap-1 p-3">
+                    <span className="w-fit rounded-full bg-[#082a3e]/5 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#082a3e] uppercase">
+                      {rotuloTipoImagem(img.type)}
+                    </span>
+                    {img.caption && <span className="text-sm font-medium text-[#111827]">{img.caption}</span>}
+                    {img.comment && <p className="text-xs text-[#4b5563]">{img.comment}</p>}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
-        <PageFooter page={6} title="Análise dos destaques" />
-      </section>
 
-      {/* Página 7 — Análise de conteúdo */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Análise de conteúdo</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {imagensConteudo.slice(0, 3).map((img) => (
-            <ImageFrame key={img.id} image={img} />
-          ))}
-        </div>
-        <FieldBlock label="Conteúdos que funcionam bem" value={d.contentAnalysis.whatWorks} />
-        <FieldBlock label="Conteúdos que podem melhorar" value={d.contentAnalysis.whatCanImprove} />
-        <FieldBlock label="Tipos de conteúdo que faltam" value={d.contentAnalysis.missingContentTypes} />
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="avoid-break rounded-xl bg-white p-3 ring-1 ring-[#e5e7eb]">
-            <PageEyebrow>Autoridade</PageEyebrow>
-            <Paragraph>{d.contentAnalysis.authorityComment}</Paragraph>
-          </div>
-          <div className="avoid-break rounded-xl bg-white p-3 ring-1 ring-[#e5e7eb]">
-            <PageEyebrow>Conexão</PageEyebrow>
-            <Paragraph>{d.contentAnalysis.connectionComment}</Paragraph>
-          </div>
-          <div className="avoid-break rounded-xl bg-white p-3 ring-1 ring-[#e5e7eb]">
-            <PageEyebrow>Conversão</PageEyebrow>
-            <Paragraph>{d.contentAnalysis.conversionComment}</Paragraph>
-          </div>
-        </div>
-        <FieldBlock label="Comentário estratégico" value={d.contentAnalysis.strategicComment} />
-        <PageFooter page={7} title="Análise de conteúdo" />
-      </section>
-
-      {/* Página 8 — Pontos fortes */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Pontos fortes</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {pontosFortesSelecionados.map((item) => (
-            <div key={item.id} className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-sm font-semibold text-[#082a3e]">{item.title}</span>
-              {item.comment && <p className="mt-1 text-sm text-[#4b5563]">{item.comment}</p>}
+        {/* Pontos de risco */}
+        {riscosOrdenados.length > 0 && (
+          <section>
+            <SectionTitle eyebrow="Atenção" title="Pontos de risco" />
+            <div className="flex flex-col gap-3">
+              {riscosOrdenados.map((risco) => {
+                const imagem = imagemPorId(risco.relatedImageId);
+                return (
+                  <div
+                    key={risco.id}
+                    className="avoid-break flex gap-4 rounded-2xl border border-[#f0d9b5] bg-[#fdf8f0] p-5"
+                  >
+                    {imagem && <ImageThumb image={imagem} className="w-32 shrink-0" />}
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      {risco.type && (
+                        <span className="w-fit rounded-full bg-[#082a3e]/5 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#082a3e] uppercase">
+                          {risco.type}
+                        </span>
+                      )}
+                      <h3 className="text-base font-semibold text-[#082a3e]">{risco.title}</h3>
+                      {risco.comment && <p className="text-sm text-[#111827]">{risco.comment}</p>}
+                      {risco.impact && (
+                        <p className="text-sm text-[#4b5563]">
+                          <b className="text-[#111827]">Impacto: </b>
+                          {risco.impact}
+                        </p>
+                      )}
+                      {risco.quickSuggestion && (
+                        <p className="text-sm text-[#4b5563]">
+                          <b className="text-[#111827]">Sugestão rápida: </b>
+                          {risco.quickSuggestion}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-        <PageFooter page={8} title="Pontos fortes" />
-      </section>
-
-      {/* Página 9 — Pontos de melhoria */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Pontos de melhoria</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {pontosMelhoriaSelecionados.map((item) => (
-            <div key={item.id} className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-sm font-semibold text-[#082a3e]">{item.title}</span>
-              {item.comment && <p className="mt-1 text-sm text-[#4b5563]">{item.comment}</p>}
-            </div>
-          ))}
-        </div>
-        <PageFooter page={9} title="Pontos de melhoria" />
-      </section>
-
-      {/* Página 10 — Oportunidades de conteúdo */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Oportunidades de conteúdo</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {d.contentOpportunities
-            .filter((op) => op.title)
-            .map((op) => (
-              <div key={op.id} className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-                <div className="mb-1 flex gap-2 text-xs">
-                  <span className="rounded-full bg-[#082a3e]/5 px-2 py-0.5 font-medium text-[#082a3e]">
-                    {CONTENT_FORMAT_OPTIONS.find((f) => f.value === op.format)?.label}
-                  </span>
-                  <span className="rounded-full bg-[#09b1c2]/10 px-2 py-0.5 font-medium text-[#09b1c2]">
-                    {CONTENT_OBJECTIVE_OPTIONS.find((o) => o.value === op.objective)?.label}
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-[#111827]">{op.title}</span>
-                {op.description && <p className="mt-1 text-sm text-[#4b5563]">{op.description}</p>}
-              </div>
-            ))}
-        </div>
-        <FieldBlock label="Observação estratégica" value={d.contentOpportunitiesNote} />
-        <PageFooter page={10} title="Oportunidades de conteúdo" />
-      </section>
-
-      {/* Página 11 — Novo direcionamento sugerido */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Novo direcionamento sugerido</h2>
-        <FieldBlock label="Como o perfil é percebido hoje" value={d.newDirection.currentPerception} />
-        <FieldBlock label="Como o perfil pode ser percebido" value={d.newDirection.futurePerception} />
-        <FieldBlock label="Caminho sugerido" value={d.newDirection.suggestedPath} />
-        {d.newDirection.centralMessage && (
-          <div className="avoid-break rounded-2xl bg-[#082a3e] p-5 text-white">
-            <PageEyebrow>Mensagem central recomendada</PageEyebrow>
-            <p className="text-base leading-relaxed">{d.newDirection.centralMessage}</p>
-          </div>
+          </section>
         )}
-        <PageFooter page={11} title="Novo direcionamento sugerido" />
-      </section>
 
-      {/* Página 12 — Plano de ação inicial */}
-      <section className="printPage flex flex-col gap-6">
-        <RunnerBrand />
-        <h2 className="text-2xl font-semibold text-[#082a3e]">Plano de ação inicial (30 dias)</h2>
-        <div className="flex flex-col gap-2">
-          {acoesSelecionadas.map((item) => (
-            <div
-              key={item.id}
-              className="avoid-break flex items-start gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3"
-            >
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#09b1c2] text-[10px] font-bold text-white">
-                ✓
-              </span>
-              <div>
-                <span className="text-sm font-semibold text-[#111827]">{item.title}</span>
-                {item.description && <p className="text-sm text-[#4b5563]">{item.description}</p>}
-              </div>
+        {/* Pontos de melhora */}
+        {melhoriasOrdenadas.length > 0 && (
+          <section>
+            <SectionTitle eyebrow="Oportunidade" title="Pontos de melhora" />
+            <div className="flex flex-col gap-3">
+              {melhoriasOrdenadas.map((melhoria) => {
+                const imagem = imagemPorId(melhoria.relatedImageId);
+                return (
+                  <div
+                    key={melhoria.id}
+                    className="avoid-break flex gap-4 rounded-2xl border border-[#bdeaef] bg-[#f0fbfc] p-5"
+                  >
+                    {imagem && <ImageThumb image={imagem} className="w-32 shrink-0" />}
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      {melhoria.type && (
+                        <span className="w-fit rounded-full bg-[#09b1c2]/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#09b1c2] uppercase">
+                          {melhoria.type}
+                        </span>
+                      )}
+                      <h3 className="text-base font-semibold text-[#082a3e]">{melhoria.title}</h3>
+                      {melhoria.comment && <p className="text-sm text-[#111827]">{melhoria.comment}</p>}
+                      {melhoria.expectedBenefit && (
+                        <p className="text-sm text-[#4b5563]">
+                          <b className="text-[#111827]">Benefício esperado: </b>
+                          {melhoria.expectedBenefit}
+                        </p>
+                      )}
+                      {melhoria.recommendedAction && (
+                        <p className="text-sm text-[#4b5563]">
+                          <b className="text-[#111827]">Ação recomendada: </b>
+                          {melhoria.recommendedAction}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-        <PageFooter page={12} title="Plano de ação inicial" />
-      </section>
+          </section>
+        )}
 
-      {/* Página 13 — Convite para reunião */}
-      <section className="printPage flex flex-col" style={{ backgroundColor: "#082a3e", color: "white" }}>
-        <RunnerBrand light />
-        <div className="flex flex-1 flex-col justify-center gap-6 py-12">
-          <Paragraph>
-            <span className="text-white/85">{d.meeting.invitationText}</span>
-          </Paragraph>
-          <p className="text-2xl leading-snug font-semibold">{d.meeting.mainCallout}</p>
-          {d.meeting.ctaText && (
-            <span className="w-fit rounded-full bg-[#09b1c2] px-6 py-3 text-sm font-semibold text-white">
-              {d.meeting.ctaText}
+        {/* Próximo passo */}
+        <section className="avoid-break rounded-2xl p-8 text-white" style={{ backgroundColor: "#082a3e" }}>
+          <p className="text-sm leading-relaxed whitespace-pre-line text-white/85">{d.meeting.invitationText}</p>
+          <p className="mt-4 text-xl font-semibold">{d.meeting.ctaText}</p>
+          {d.meeting.buttonText && (
+            <span className="mt-4 inline-block w-fit rounded-full bg-[#09b1c2] px-6 py-3 text-sm font-semibold text-white">
+              {d.meeting.buttonText}
             </span>
           )}
-        </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/70">
-          {d.meeting.responsibleName && <span>{d.meeting.responsibleName}</span>}
-          {d.meeting.whatsapp && <span>WhatsApp: {d.meeting.whatsapp}</span>}
-          {d.meeting.runnerInstagram && <span>Instagram: @{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
-          {d.meeting.meetingLink && <span>{d.meeting.meetingLink}</span>}
-        </div>
-      </section>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/70">
+            {d.meeting.whatsapp && <span>WhatsApp: {d.meeting.whatsapp}</span>}
+            {d.meeting.runnerInstagram && <span>Instagram: @{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
+            {d.meeting.meetingLink && <span>{d.meeting.meetingLink}</span>}
+          </div>
+        </section>
 
-      {/* Página 14 — Página final */}
-      <section
-        className="printPage flex flex-col items-center justify-center gap-6 text-center"
-        style={{ backgroundColor: "#082a3e", color: "white" }}
-      >
-        <span className="text-sm font-semibold tracking-widest text-[#09b1c2] uppercase">Runner Marketing</span>
-        <p className="max-w-md text-xl leading-relaxed font-medium">{d.closing.finalPhrase}</p>
-        <div className="flex flex-col gap-1 text-sm text-white/70">
-          {d.meeting.runnerInstagram && <span>@{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
-          {d.meeting.whatsapp && <span>{d.meeting.whatsapp}</span>}
-          {d.closing.site && <span>{d.closing.site}</span>}
-        </div>
-      </section>
+        {/* Rodapé */}
+        <footer className="avoid-break flex flex-col items-center gap-2 border-t border-[#e5e7eb] pt-6 text-center">
+          <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">
+            Runner Marketing
+          </span>
+          <p className="max-w-md text-sm text-[#4b5563]">{d.meeting.finalPhrase}</p>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[#4b5563]">
+            {d.meeting.runnerInstagram && <span>@{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
+            {d.meeting.whatsapp && <span>{d.meeting.whatsapp}</span>}
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

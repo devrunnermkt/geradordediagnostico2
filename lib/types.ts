@@ -1,7 +1,7 @@
 // Modelo de dados do Runner Insight. Um Diagnostic é a única fonte de
-// verdade de um diagnóstico de Instagram: dados do cliente, análises por
-// página, imagens e o plano de ação. Tudo é serializável em JSON (para
-// localStorage e exportação/importação de arquivo).
+// verdade de um diagnóstico rápido de Instagram: dados do cliente, resumo,
+// imagens, pontos de risco, pontos de melhora e o convite para reunião.
+// Tudo é serializável em JSON (para localStorage e exportação/importação).
 
 export type DiagnosticStatus =
   | "rascunho"
@@ -18,26 +18,7 @@ export type ImageType =
   | "post"
   | "reels"
   | "stories"
-  | "cover"
   | "other";
-
-export type ContentFormat =
-  | "reels"
-  | "post"
-  | "carousel"
-  | "stories"
-  | "ad"
-  | "backstage"
-  | "testimonial";
-
-export type ContentObjective =
-  | "authority"
-  | "connection"
-  | "conversion"
-  | "social-proof"
-  | "desire"
-  | "education"
-  | "offer";
 
 export interface DiagnosticImage {
   id: string;
@@ -49,108 +30,43 @@ export interface DiagnosticImage {
   order: number;
 }
 
-export interface Scores {
-  clarity: number; // 1 a 5
-  visualIdentity: number;
-  authority: number;
-  humanization: number;
-  conversion: number;
-  consistency: number;
-}
-
-export interface GeneralAnalysis {
+export interface Summary {
   firstImpression: string;
-  mainStrength: string;
+  mainRisk: string;
   mainOpportunity: string;
-  perceivedPotential: string;
+  suggestedObjective: string;
 }
 
-export interface BioAnalysis {
-  currentBio: string;
-  positivePoints: string;
-  improvementPoints: string;
-  suggestedBio: string;
-  strategicComment: string;
-}
-
-export interface VisualAnalysis {
-  identityComment: string;
-  feedHarmony: string;
-  imageQuality: string;
-  professionalPerception: string;
-  visualDirection: string;
-}
-
-export interface HighlightsAnalysis {
-  organization: string;
-  covers: string;
-  names: string;
-  recommendedHighlights: string[];
-  strategicComment: string;
-}
-
-export interface ContentAnalysis {
-  whatWorks: string;
-  whatCanImprove: string;
-  missingContentTypes: string;
-  authorityComment: string;
-  connectionComment: string;
-  conversionComment: string;
-  strategicComment: string;
-}
-
-export interface StrengthItem {
+export interface RiskPoint {
   id: string;
+  type: string;
   title: string;
   comment: string;
+  impact: string;
+  quickSuggestion: string;
+  relatedImageId: string | null;
+  order: number;
 }
 
-export interface ImprovementItem {
+export interface ImprovementPoint {
   id: string;
+  type: string;
   title: string;
   comment: string;
-}
-
-export interface ContentOpportunity {
-  id: string;
-  title: string;
-  format: ContentFormat;
-  objective: ContentObjective;
-  description: string;
-}
-
-export interface NewDirection {
-  currentPerception: string;
-  futurePerception: string;
-  suggestedPath: string;
-  centralMessage: string;
-}
-
-export interface ActionPlanItem {
-  id: string;
-  title: string;
-  selected: boolean;
-  description: string;
-}
-
-export interface AnalysisObjective {
-  objective: string;
-  summary: string;
+  expectedBenefit: string;
+  recommendedAction: string;
+  relatedImageId: string | null;
+  order: number;
 }
 
 export interface Meeting {
   invitationText: string;
-  mainCallout: string;
   ctaText: string;
+  buttonText: string;
   meetingLink: string;
   whatsapp: string;
   runnerInstagram: string;
-  responsibleName: string;
-}
-
-export interface Closing {
   finalPhrase: string;
-  site: string;
 }
 
 export interface Diagnostic {
@@ -165,22 +81,11 @@ export interface Diagnostic {
   createdAt: string;
   updatedAt: string;
 
-  scores: Scores;
-  analysisObjective: AnalysisObjective;
-  generalAnalysis: GeneralAnalysis;
-  bioAnalysis: BioAnalysis;
-  visualAnalysis: VisualAnalysis;
-  highlightsAnalysis: HighlightsAnalysis;
-  contentAnalysis: ContentAnalysis;
-  strengths: StrengthItem[];
-  improvements: ImprovementItem[];
-  contentOpportunities: ContentOpportunity[];
-  contentOpportunitiesNote: string;
-  newDirection: NewDirection;
-  actionPlan: ActionPlanItem[];
-  meeting: Meeting;
-  closing: Closing;
+  summary: Summary;
   images: DiagnosticImage[];
+  risks: RiskPoint[];
+  improvements: ImprovementPoint[];
+  meeting: Meeting;
 }
 
 // Metadados leves para a lista da página inicial (evita carregar o

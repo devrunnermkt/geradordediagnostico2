@@ -1,9 +1,9 @@
 # Runner Insight
 
-Sistema interno da Runner Marketing para gerar diagnósticos estratégicos de
-Instagram: preenche dados do cliente, sobe prints do perfil, monta a análise
-em 10 abas e exporta uma prévia profissional de 14 páginas pronta para
-imprimir ou salvar como PDF pelo navegador.
+Sistema interno da Runner Marketing para gerar diagnósticos **rápidos** de
+Instagram: preenche dados do cliente, sobe prints do perfil, cadastra pontos
+de risco e de melhora, e exporta uma prévia comercial enxuta (HTML único, 2 a
+4 páginas ao imprimir) pronta para enviar a possíveis clientes.
 
 100% front-end: sem backend, sem banco de dados, sem login, sem API externa.
 Tudo fica salvo no `localStorage` do navegador usado.
@@ -15,7 +15,7 @@ Tudo fica salvo no `localStorage` do navegador usado.
 - Persistência em `localStorage`, imagens convertidas para base64 (redimensionadas no upload)
 - Exportação/importação de projeto em JSON
 - Exportação em HTML autocontido
-- Impressão/PDF via `window.print()` com CSS de impressão dedicado (A4)
+- Impressão/PDF via `window.print()` com CSS de impressão dedicado (A4, documento fluido)
 
 ## Como rodar
 
@@ -36,15 +36,20 @@ Acesse `http://localhost:3000`.
 
 1. Na página inicial, clique em **Criar novo diagnóstico** (ou **Importar
    projeto** para carregar um `.json` exportado antes).
-2. Preencha os dados nas 10 abas do editor — o rascunho salva automaticamente
+2. Preencha os dados nas 5 abas do editor — o rascunho salva automaticamente
    no navegador a cada alteração.
-3. Envie os prints do Instagram na aba **Imagens** (ou diretamente nas abas
-   Bio/Visual/Destaques/Conteúdo, que já filtram pelo tipo certo).
-4. Clique em **Visualizar diagnóstico** para ver a prévia final.
-5. Na prévia, use **Imprimir / Salvar PDF** (abre o diálogo de impressão do
+3. Envie os prints do Instagram na aba **Imagens** (tipo, legenda e
+   comentário por imagem); depois vincule-as opcionalmente a um ponto de
+   risco ou de melhora.
+4. Cadastre quantos **Pontos de risco** e **Pontos de melhora** fizerem
+   sentido para o perfil.
+5. Clique em **Visualizar diagnóstico** para ver a prévia final (um único
+   documento: cabeçalho, resumo, imagens, riscos, melhorias, próximo passo e
+   rodapé).
+6. Na prévia, use **Imprimir / Salvar PDF** (abre o diálogo de impressão do
    navegador — escolha "Salvar como PDF"), ou **Exportar HTML**/**Exportar
    JSON** para levar o material para outro lugar.
-6. Na página inicial, cada diagnóstico salvo pode ser editado, visualizado,
+7. Na página inicial, cada diagnóstico salvo pode ser editado, visualizado,
    duplicado, exportado ou excluído (com confirmação).
 
 ## Estrutura do projeto
@@ -52,14 +57,13 @@ Acesse `http://localhost:3000`.
 ```
 app/
   page.tsx                        Página inicial (lista + criar/importar)
-  diagnostico/[id]/page.tsx        Editor com as 10 abas + autosave
+  diagnostico/[id]/page.tsx        Editor com as 5 abas + autosave
   diagnostico/[id]/preview/page.tsx  Prévia final + toolbar de exportação
   globals.css                      Tema (paleta Runner) + regras de impressão A4
 
 components/diagnostic/             Componentes reutilizáveis da ferramenta
-  DiagnosticCard, ImageUploader, ImageCard, ScoreInput, SectionCard,
-  TextAreaField, CheckboxGroupWithComments, OpportunityEditor,
-  ActionPlanEditor, PreviewDocument, PrintToolbar, EmptyState,
+  DiagnosticCard, ImageUploader, ImageCard, RiskEditor, ImprovementEditor,
+  SectionCard, TextAreaField, PreviewDocument, PrintToolbar, EmptyState,
   ConfirmDialog, StatusBadge
 
 components/ui/                     Primitivos shadcn/ui (button, input, tabs, dialog...)
@@ -81,9 +85,9 @@ CSS do tema shadcn — `--primary`, `--secondary`, `--background`, etc.):
 - Azul destaque `#09b1c2` — cor secundária/de destaque
 - Fundo claro `#f7fbfc`, texto `#111827`, cinza claro `#e5e7eb`
 
-## Adicionando um novo diagnóstico ao modelo de dados
+## Ajustando campos e textos padrão
 
-Os campos e textos padrão de cada página do relatório ficam em
-`lib/types.ts` (tipos) e `lib/defaultData.ts` (valores iniciais, textos
-padrão e listas de opções) — ajuste ali para mudar o conteúdo sugerido sem
-tocar nos componentes.
+Os campos e textos padrão do diagnóstico ficam em `lib/types.ts` (tipos) e
+`lib/defaultData.ts` (valores iniciais, textos padrão e sugestões de tipo de
+risco/melhora) — ajuste ali para mudar o conteúdo sugerido sem tocar nos
+componentes.

@@ -129,16 +129,17 @@
   }
 }
 
-/* Impressão / exportação em PDF (via window.print) — cada .printPage vira
-   uma página A4. Fora do modo print, .printPage só ganha um leve visual de
-   folha (sombra e espaçamento) para simular a prévia do PDF na tela. */
+/* Impressão / exportação em PDF (via window.print). O diagnóstico é um
+   documento único e fluido (largura de página A4, altura livre) — o
+   navegador decide quantas páginas físicas ele ocupa ao imprimir,
+   normalmente 2 a 4 dependendo da quantidade de imagens e cards. .avoid-break
+   evita que um card seja cortado ao meio entre duas páginas impressas. */
 .printPage {
   width: 210mm;
-  min-height: 297mm;
   padding: 18mm 16mm;
   background: #ffffff;
   box-sizing: border-box;
-  margin: 0 auto 24px auto;
+  margin: 0 auto;
   box-shadow: 0 1px 3px rgba(17, 24, 39, 0.08), 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
@@ -149,7 +150,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 0;
+    margin: 14mm 12mm;
   }
 
   html,
@@ -162,15 +163,10 @@
   }
 
   .printPage {
+    width: auto;
     margin: 0;
+    padding: 0;
     box-shadow: none;
-    break-after: page;
-    page-break-after: always;
-  }
-
-  .printPage:last-child {
-    break-after: auto;
-    page-break-after: auto;
   }
 
   .avoid-break {

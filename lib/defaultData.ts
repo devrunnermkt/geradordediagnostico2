@@ -2,7 +2,7 @@
 // Centraliza todo o "conteúdo estático" do sistema para facilitar ajuste de
 // copy sem mexer em componentes.
 
-import type { Diagnostic, DiagnosticStatus, ImageType } from "./types";
+import type { Diagnostic, DiagnosticStatus, ImprovementPoint, RiskPoint } from "./types";
 
 export function createId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -17,17 +17,6 @@ export const STATUS_OPTIONS: { value: DiagnosticStatus; label: string }[] = [
   { value: "pronto-para-envio", label: "Pronto para envio" },
   { value: "enviado", label: "Enviado" },
   { value: "reuniao-marcada", label: "Reunião marcada" },
-];
-
-export const IMAGE_TYPE_OPTIONS: { value: ImageType; label: string }[] = [
-  { value: "profile", label: "Perfil completo" },
-  { value: "bio", label: "Bio" },
-  { value: "feed", label: "Feed" },
-  { value: "highlights", label: "Destaques" },
-  { value: "post", label: "Post" },
-  { value: "reels", label: "Reels" },
-  { value: "stories", label: "Stories" },
-  { value: "other", label: "Outro" },
 ];
 
 export const RISK_TYPE_SUGGESTIONS = [
@@ -95,8 +84,6 @@ export function createEmptyDiagnostic(): Diagnostic {
       suggestedObjective: "",
     },
 
-    images: [],
-
     risks: [
       {
         id: createId(),
@@ -108,8 +95,8 @@ export function createEmptyDiagnostic(): Diagnostic {
           "Isso pode fazer com que pessoas interessadas saiam do perfil sem chamar no direct ou WhatsApp.",
         quickSuggestion:
           "Reescrever a bio com promessa clara, serviço principal e chamada para contato.",
-        relatedImageId: null,
         order: 0,
+        images: [],
       },
     ],
 
@@ -123,8 +110,8 @@ export function createEmptyDiagnostic(): Diagnostic {
         expectedBenefit: "O visitante entende melhor o serviço e ganha mais segurança para chamar.",
         recommendedAction:
           "Criar destaques como Sobre, Serviços, Resultados, Depoimentos, Bastidores e Contato.",
-        relatedImageId: null,
         order: 0,
+        images: [],
       },
     ],
 
@@ -137,5 +124,24 @@ export function createEmptyDiagnostic(): Diagnostic {
       runnerInstagram: "",
       finalPhrase: DEFAULT_TEXTS.finalPhrase,
     },
+  };
+}
+
+// Normaliza um diagnóstico vindo do localStorage ou de um JSON importado.
+// Protege contra formatos antigos (de antes das imagens ficarem dentro de
+// cada ponto): garante que risks/improvements sempre tenham um array
+// `images`, mesmo que o dado de origem não tivesse esse campo.
+export function sanitizeDiagnostic(diagnostic: Diagnostic): Diagnostic {
+  const sanitizarPonto = <T extends RiskPoint | ImprovementPoint>(ponto: T): T => ({
+    ...ponto,
+    images: Array.isArray(ponto.images) ? ponto.images : [],
+  });
+
+  return {
+    ...diagnostic,
+    risks: Array.isArray(diagnostic.risks) ? diagnostic.risks.map(sanitizarPonto) : [],
+    improvements: Array.isArray(diagnostic.improvements)
+      ? diagnostic.improvements.map(sanitizarPonto)
+      : [],
   };
 }

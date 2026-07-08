@@ -1,6 +1,7 @@
-// Editor de um diagnóstico rápido: 5 abas cobrindo dados gerais, imagens,
-// pontos de risco, pontos de melhora e finalização, com salvamento
-// automático no localStorage.
+// Editor de um diagnóstico rápido: 4 abas cobrindo dados gerais, pontos de
+// risco, pontos de melhora e finalização, com salvamento automático no
+// localStorage. As imagens são cadastradas dentro de cada ponto de risco/
+// melhora (ver RiskEditor/ImprovementEditor), não numa aba separada.
 
 "use client";
 
@@ -13,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageUploader } from "@/components/diagnostic/ImageUploader";
 import { ImprovementEditor } from "@/components/diagnostic/ImprovementEditor";
 import { RiskEditor } from "@/components/diagnostic/RiskEditor";
 import { SectionCard } from "@/components/diagnostic/SectionCard";
@@ -117,33 +117,24 @@ function DadosGeraisTab({ d, atualizar }: { d: Diagnostic; atualizar: Atualizar 
   );
 }
 
-function ImagensTab({ d, atualizar }: { d: Diagnostic; atualizar: Atualizar }) {
-  return (
-    <SectionCard
-      title="Imagens do diagnóstico"
-      description="Envie os prints do Instagram. Cada imagem pode ser vinculada a um ponto de risco ou de melhora nas outras abas."
-    >
-      <ImageUploader images={d.images} onChange={(images) => atualizar({ images })} />
-    </SectionCard>
-  );
-}
-
 function RiscosTab({ d, atualizar }: { d: Diagnostic; atualizar: Atualizar }) {
   return (
-    <SectionCard title="Pontos de risco" description="O que pode estar travando a percepção de valor do perfil.">
-      <RiskEditor risks={d.risks} images={d.images} onChange={(risks) => atualizar({ risks })} />
+    <SectionCard
+      title="Pontos de risco"
+      description="O que pode estar travando a percepção de valor do perfil. Envie os prints direto em cada ponto."
+    >
+      <RiskEditor risks={d.risks} onChange={(risks) => atualizar({ risks })} />
     </SectionCard>
   );
 }
 
 function MelhoriasTab({ d, atualizar }: { d: Diagnostic; atualizar: Atualizar }) {
   return (
-    <SectionCard title="Pontos de melhora" description="O que pode tornar o perfil mais estratégico.">
-      <ImprovementEditor
-        improvements={d.improvements}
-        images={d.images}
-        onChange={(improvements) => atualizar({ improvements })}
-      />
+    <SectionCard
+      title="Pontos de melhora"
+      description="O que pode tornar o perfil mais estratégico. Envie os prints direto em cada ponto."
+    >
+      <ImprovementEditor improvements={d.improvements} onChange={(improvements) => atualizar({ improvements })} />
     </SectionCard>
   );
 }
@@ -197,7 +188,6 @@ function FinalizacaoTab({ d, atualizar }: { d: Diagnostic; atualizar: Atualizar 
 
 const ABAS = [
   { value: "dados-gerais", label: "Dados gerais" },
-  { value: "imagens", label: "Imagens" },
   { value: "riscos", label: "Pontos de risco" },
   { value: "melhorias", label: "Pontos de melhora" },
   { value: "finalizacao", label: "Finalização" },
@@ -294,9 +284,6 @@ export default function DiagnosticEditorPage() {
           <div className="mt-6">
             <TabsContent value="dados-gerais">
               <DadosGeraisTab d={diagnostico} atualizar={atualizar} />
-            </TabsContent>
-            <TabsContent value="imagens">
-              <ImagensTab d={diagnostico} atualizar={atualizar} />
             </TabsContent>
             <TabsContent value="riscos">
               <RiscosTab d={diagnostico} atualizar={atualizar} />

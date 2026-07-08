@@ -1,7 +1,8 @@
 // Modelo de dados do Runner Insight. Um Diagnostic é a única fonte de
 // verdade de um diagnóstico rápido de Instagram: dados do cliente, resumo,
-// imagens, pontos de risco, pontos de melhora e o convite para reunião.
-// Tudo é serializável em JSON (para localStorage e exportação/importação).
+// pontos de risco, pontos de melhora (cada um com suas próprias imagens) e
+// o convite para reunião. Tudo é serializável em JSON (para localStorage e
+// exportação/importação).
 
 export type DiagnosticStatus =
   | "rascunho"
@@ -10,21 +11,12 @@ export type DiagnosticStatus =
   | "enviado"
   | "reuniao-marcada";
 
-export type ImageType =
-  | "profile"
-  | "bio"
-  | "feed"
-  | "highlights"
-  | "post"
-  | "reels"
-  | "stories"
-  | "other";
-
-export interface DiagnosticImage {
+// Imagem pertencente a um ponto de risco ou de melhora específico — não tem
+// mais "tipo", já que o contexto (o ponto em que está) já diz o que ela é.
+export interface PointImage {
   id: string;
-  type: ImageType;
-  name: string;
   src: string; // base64 (data URL), já redimensionada
+  name: string;
   caption: string;
   comment: string;
   order: number;
@@ -44,8 +36,8 @@ export interface RiskPoint {
   comment: string;
   impact: string;
   quickSuggestion: string;
-  relatedImageId: string | null;
   order: number;
+  images: PointImage[];
 }
 
 export interface ImprovementPoint {
@@ -55,8 +47,8 @@ export interface ImprovementPoint {
   comment: string;
   expectedBenefit: string;
   recommendedAction: string;
-  relatedImageId: string | null;
   order: number;
+  images: PointImage[];
 }
 
 export interface Meeting {
@@ -82,7 +74,6 @@ export interface Diagnostic {
   updatedAt: string;
 
   summary: Summary;
-  images: DiagnosticImage[];
   risks: RiskPoint[];
   improvements: ImprovementPoint[];
   meeting: Meeting;

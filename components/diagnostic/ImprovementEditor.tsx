@@ -1,6 +1,7 @@
 // Editor da lista de pontos de melhora: cada card tem tipo (com sugestões),
-// título, comentário, benefício esperado, ação recomendada e uma imagem
-// relacionada opcional. Permite adicionar, editar, remover e reordenar.
+// título, comentário, benefício esperado, ação recomendada e suas próprias
+// imagens. Permite adicionar, editar, remover e reordenar tanto os pontos
+// quanto as imagens dentro de cada um.
 
 "use client";
 
@@ -8,18 +9,17 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createId, IMAGE_TYPE_OPTIONS, IMPROVEMENT_TYPE_SUGGESTIONS } from "@/lib/defaultData";
-import type { DiagnosticImage, ImprovementPoint } from "@/lib/types";
+import { PointImageUploader } from "./PointImageUploader";
+import { createId, IMPROVEMENT_TYPE_SUGGESTIONS } from "@/lib/defaultData";
+import type { ImprovementPoint } from "@/lib/types";
 
 interface ImprovementEditorProps {
   improvements: ImprovementPoint[];
-  images: DiagnosticImage[];
   onChange: (improvements: ImprovementPoint[]) => void;
 }
 
-export function ImprovementEditor({ improvements, images, onChange }: ImprovementEditorProps) {
+export function ImprovementEditor({ improvements, onChange }: ImprovementEditorProps) {
   const ordenados = [...improvements].sort((a, b) => a.order - b.order);
 
   const atualizar = (id: string, patch: Partial<ImprovementPoint>) => {
@@ -41,8 +41,8 @@ export function ImprovementEditor({ improvements, images, onChange }: Improvemen
         comment: "",
         expectedBenefit: "",
         recommendedAction: "",
-        relatedImageId: null,
         order: proximaOrdem,
+        images: [],
       },
     ]);
   };
@@ -99,36 +99,14 @@ export function ImprovementEditor({ improvements, images, onChange }: Improvemen
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Tipo</Label>
-              <Input
-                list="improvement-type-suggestions"
-                value={melhoria.type}
-                onChange={(e) => atualizar(melhoria.id, { type: e.target.value })}
-                placeholder="Ex.: Organizar destaques"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Imagem relacionada (opcional)</Label>
-              <Select
-                value={melhoria.relatedImageId ?? "none"}
-                onValueChange={(v) => atualizar(melhoria.id, { relatedImageId: v === "none" ? null : v })}
-              >
-                <SelectTrigger size="sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {images.map((img) => (
-                    <SelectItem key={img.id} value={img.id}>
-                      {IMAGE_TYPE_OPTIONS.find((t) => t.value === img.type)?.label} —{" "}
-                      {img.caption || "sem legenda"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground">Tipo</Label>
+            <Input
+              list="improvement-type-suggestions"
+              value={melhoria.type}
+              onChange={(e) => atualizar(melhoria.id, { type: e.target.value })}
+              placeholder="Ex.: Organizar destaques"
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -166,6 +144,11 @@ export function ImprovementEditor({ improvements, images, onChange }: Improvemen
               rows={2}
             />
           </div>
+
+          <PointImageUploader
+            images={melhoria.images}
+            onChange={(images) => atualizar(melhoria.id, { images })}
+          />
         </div>
       ))}
 

@@ -3,6 +3,7 @@
 // renderizado (com o CSS já compilado da página) num único arquivo
 // autocontido, sem precisar de backend.
 
+import { sanitizeDiagnostic } from "./defaultData";
 import type { Diagnostic } from "./types";
 
 export function slugify(texto: string): string {
@@ -42,7 +43,9 @@ export async function parseDiagnosticFromFile(file: File): Promise<Diagnostic> {
     throw new Error("Arquivo JSON não parece ser um diagnóstico válido do Runner Insight.");
   }
 
-  return dados as Diagnostic;
+  // Normaliza formatos antigos (ex.: pontos sem array de imagens próprio)
+  // pra não quebrar a UI ao importar um JSON exportado de uma versão anterior.
+  return sanitizeDiagnostic(dados as Diagnostic);
 }
 
 // Congela o HTML renderizado (elemento da prévia) + todo o CSS compilado das

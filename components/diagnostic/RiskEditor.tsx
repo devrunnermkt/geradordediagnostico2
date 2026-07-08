@@ -1,6 +1,7 @@
 // Editor da lista de pontos de risco: cada card tem tipo (com sugestões),
-// título, comentário, impacto, sugestão rápida e uma imagem relacionada
-// opcional. Permite adicionar, editar, remover e reordenar.
+// título, comentário, impacto, sugestão rápida e suas próprias imagens.
+// Permite adicionar, editar, remover e reordenar tanto os pontos quanto as
+// imagens dentro de cada um.
 
 "use client";
 
@@ -8,18 +9,17 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createId, IMAGE_TYPE_OPTIONS, RISK_TYPE_SUGGESTIONS } from "@/lib/defaultData";
-import type { DiagnosticImage, RiskPoint } from "@/lib/types";
+import { PointImageUploader } from "./PointImageUploader";
+import { createId, RISK_TYPE_SUGGESTIONS } from "@/lib/defaultData";
+import type { RiskPoint } from "@/lib/types";
 
 interface RiskEditorProps {
   risks: RiskPoint[];
-  images: DiagnosticImage[];
   onChange: (risks: RiskPoint[]) => void;
 }
 
-export function RiskEditor({ risks, images, onChange }: RiskEditorProps) {
+export function RiskEditor({ risks, onChange }: RiskEditorProps) {
   const ordenados = [...risks].sort((a, b) => a.order - b.order);
 
   const atualizar = (id: string, patch: Partial<RiskPoint>) => {
@@ -41,8 +41,8 @@ export function RiskEditor({ risks, images, onChange }: RiskEditorProps) {
         comment: "",
         impact: "",
         quickSuggestion: "",
-        relatedImageId: null,
         order: proximaOrdem,
+        images: [],
       },
     ]);
   };
@@ -99,36 +99,14 @@ export function RiskEditor({ risks, images, onChange }: RiskEditorProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Tipo</Label>
-              <Input
-                list="risk-type-suggestions"
-                value={risco.type}
-                onChange={(e) => atualizar(risco.id, { type: e.target.value })}
-                placeholder="Ex.: Bio pouco clara"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Imagem relacionada (opcional)</Label>
-              <Select
-                value={risco.relatedImageId ?? "none"}
-                onValueChange={(v) => atualizar(risco.id, { relatedImageId: v === "none" ? null : v })}
-              >
-                <SelectTrigger size="sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {images.map((img) => (
-                    <SelectItem key={img.id} value={img.id}>
-                      {IMAGE_TYPE_OPTIONS.find((t) => t.value === img.type)?.label} —{" "}
-                      {img.caption || "sem legenda"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground">Tipo</Label>
+            <Input
+              list="risk-type-suggestions"
+              value={risco.type}
+              onChange={(e) => atualizar(risco.id, { type: e.target.value })}
+              placeholder="Ex.: Bio pouco clara"
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -166,6 +144,11 @@ export function RiskEditor({ risks, images, onChange }: RiskEditorProps) {
               rows={2}
             />
           </div>
+
+          <PointImageUploader
+            images={risco.images}
+            onChange={(images) => atualizar(risco.id, { images })}
+          />
         </div>
       ))}
 

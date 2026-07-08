@@ -3,13 +3,13 @@
 // ponto de leitura/escrita — telas chamam essas funções, nunca localStorage
 // diretamente.
 
-import { createEmptyDiagnostic, createId } from "./defaultData";
+import { createEmptyDiagnostic, createId, sanitizeDiagnostic } from "./defaultData";
 import type { Diagnostic, DiagnosticSummary } from "./types";
 
-// v2: modelo de dados simplificado (summary/risks/improvements em vez das
-// antigas análises por página) — chave nova pra não carregar diagnósticos
-// salvos no formato antigo, que quebrariam a UI enxuta.
-const STORAGE_KEY = "runner-insight-diagnostics-v2";
+// v3: imagens passaram a viver dentro de cada ponto de risco/melhora (em
+// vez de uma lista global vinculada por id) — chave nova pra não carregar
+// diagnósticos salvos no formato anterior, que quebrariam a UI atual.
+const STORAGE_KEY = "runner-insight-diagnostics-v3";
 
 type DiagnosticMap = Record<string, Diagnostic>;
 
@@ -47,7 +47,8 @@ export function listDiagnostics(): DiagnosticSummary[] {
 
 export function getDiagnostic(id: string): Diagnostic | null {
   const mapa = lerTudo();
-  return mapa[id] ?? null;
+  const diagnostico = mapa[id];
+  return diagnostico ? sanitizeDiagnostic(diagnostico) : null;
 }
 
 export function saveDiagnostic(diagnostic: Diagnostic): Diagnostic {

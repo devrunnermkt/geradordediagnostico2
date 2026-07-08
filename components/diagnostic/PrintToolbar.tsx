@@ -5,6 +5,7 @@
 
 import { ArrowLeft, Code2, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RunnerLogo } from "@/components/RunnerLogo";
 
 interface PrintToolbarProps {
   clientName: string;
@@ -16,10 +17,13 @@ interface PrintToolbarProps {
 
 export function PrintToolbar({ clientName, onEdit, onPrint, onExportHtml, onExportJson }: PrintToolbarProps) {
   return (
-    <div className="no-print sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/95 px-6 py-3 backdrop-blur">
-      <div className="flex flex-col">
-        <span className="text-sm font-semibold text-foreground">{clientName || "Diagnóstico"}</span>
-        <span className="text-xs text-muted-foreground">Prévia do relatório final</span>
+    <div className="no-print sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-background/85 px-6 py-3 backdrop-blur-md">
+      <div className="flex items-center gap-3">
+        <RunnerLogo className="h-7" />
+        <div className="flex flex-col border-l border-border pl-3">
+          <span className="text-sm font-semibold text-foreground">{clientName || "Diagnóstico"}</span>
+          <span className="text-xs text-muted-foreground">Prévia do relatório final</span>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" size="sm" onClick={onEdit}>

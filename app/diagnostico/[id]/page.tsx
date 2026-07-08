@@ -10,6 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Eye, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { RunnerLogo } from "@/components/RunnerLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -243,14 +244,17 @@ export default function DiagnosticEditorPage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/95 px-6 py-3 backdrop-blur">
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-foreground">
-            {diagnostico.clientName || "Novo diagnóstico"}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {salvandoEm ? `Salvo automaticamente às ${salvandoEm}` : "Ainda não salvo"}
-          </span>
+      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-background/85 px-6 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <RunnerLogo className="h-7" />
+          <div className="flex flex-col border-l border-border pl-3">
+            <span className="text-sm font-semibold text-foreground">
+              {diagnostico.clientName || "Novo diagnóstico"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {salvandoEm ? `Salvo automaticamente às ${salvandoEm}` : "Ainda não salvo"}
+            </span>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => router.push("/")}>

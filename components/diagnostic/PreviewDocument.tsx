@@ -3,9 +3,21 @@
 // window.print, ver app/globals.css) e na exportação em HTML. Seis seções:
 // cabeçalho, resumo, riscos (imagem ao lado do texto), melhorias (idem),
 // próximo passo e rodapé.
+//
+// Paleta e estrutura do cabeçalho seguem exatamente o padrão do Gerador de
+// Propostas Runner (mesma identidade visual da agência): badge "R" +
+// wordmark em vez do PNG da logo, porque este documento também é
+// exportado como HTML autocontido — um <img> apontando para /public
+// quebraria fora do app.
 
 import { DEFAULT_TEXTS } from "@/lib/defaultData";
 import type { Diagnostic, PointImage } from "@/lib/types";
+
+const INK = "#082a3e";
+const ACCENT = "#09b1c2";
+const MUTED = "#5b7686";
+const LINE = "#e3edf1";
+const BG_SOFT = "#f7fbfc";
 
 function formatarData(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
@@ -14,8 +26,15 @@ function formatarData(iso: string): string {
 function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div className="mb-4">
-      <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">{eyebrow}</span>
-      <h2 className="text-2xl font-semibold text-[#082a3e]">{title}</h2>
+      <div className="mb-1 flex items-center gap-2">
+        <span className="inline-block h-0.5 w-4" style={{ backgroundColor: ACCENT }} />
+        <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: ACCENT }}>
+          {eyebrow}
+        </span>
+      </div>
+      <h2 className="text-2xl font-semibold" style={{ color: INK }}>
+        {title}
+      </h2>
     </div>
   );
 }
@@ -61,9 +80,15 @@ function PointCard({ images, type, title, comment, fields, borderColor, bgColor,
             {(principal.caption || principal.comment) && (
               <div className="flex flex-col gap-0.5 p-2">
                 {principal.caption && (
-                  <span className="text-xs font-medium text-[#111827]">{principal.caption}</span>
+                  <span className="text-xs font-medium" style={{ color: INK }}>
+                    {principal.caption}
+                  </span>
                 )}
-                {principal.comment && <p className="text-[11px] text-[#4b5563]">{principal.comment}</p>}
+                {principal.comment && (
+                  <p className="text-[11px]" style={{ color: MUTED }}>
+                    {principal.comment}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -91,13 +116,19 @@ function PointCard({ images, type, title, comment, fields, borderColor, bgColor,
             {type}
           </span>
         )}
-        <h3 className="text-base font-semibold text-[#082a3e]">{title}</h3>
-        {comment && <p className="text-sm text-[#111827]">{comment}</p>}
+        <h3 className="text-base font-semibold" style={{ color: INK }}>
+          {title}
+        </h3>
+        {comment && (
+          <p className="text-sm" style={{ color: "#111827" }}>
+            {comment}
+          </p>
+        )}
         {fields.map(
           (campo) =>
             campo.value && (
-              <p key={campo.label} className="text-sm text-[#4b5563]">
-                <b className="text-[#111827]">{campo.label}: </b>
+              <p key={campo.label} className="text-sm" style={{ color: MUTED }}>
+                <b style={{ color: "#111827" }}>{campo.label}: </b>
                 {campo.value}
               </p>
             )
@@ -116,154 +147,199 @@ export function PreviewDocument({ diagnostic: d }: PreviewDocumentProps) {
   const melhoriasOrdenadas = [...d.improvements].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="flex justify-center bg-[#f7fbfc] py-10 print:bg-white print:py-0">
-      <div className="printPage flex flex-col gap-10">
+    <div className="flex justify-center py-10 print:py-0" style={{ backgroundColor: BG_SOFT }}>
+      <div className="printPage flex flex-col overflow-hidden p-0!">
         {/* Cabeçalho */}
-        <header className="avoid-break flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">
-              Runner Marketing
-            </span>
-            <span className="text-xs text-[#4b5563]">Data da análise: {formatarData(d.createdAt)}</span>
+        <header
+          className="avoid-break flex items-start justify-between gap-4 px-8 py-8 text-white sm:px-11"
+          style={{ backgroundColor: INK }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-2xl font-extrabold"
+              style={{ backgroundColor: ACCENT }}
+            >
+              R
+            </div>
+            <div className="leading-tight">
+              <div className="text-xl font-extrabold tracking-tight">RUNNER</div>
+              <div className="text-[10px] font-semibold tracking-[0.3em] uppercase" style={{ color: ACCENT }}>
+                Marketing
+              </div>
+            </div>
           </div>
-
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold text-[#082a3e] sm:text-3xl">Diagnóstico rápido de Instagram</h1>
-            <p className="max-w-lg text-sm text-[#4b5563]">
-              Pontos de risco e oportunidades para melhorar a percepção do perfil e gerar mais contatos.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-x-8 gap-y-1.5 rounded-2xl border border-[#e5e7eb] bg-white p-5 text-sm text-[#111827] sm:grid-cols-3">
-            <span>
-              <b>Cliente:</b> {d.clientName || "—"}
-            </span>
-            <span>
-              <b>Instagram:</b> {d.instagramHandle ? `@${d.instagramHandle.replace(/^@/, "")}` : "—"}
-            </span>
-            <span>
-              <b>Segmento:</b> {d.segment || "—"}
-            </span>
-            <span>
-              <b>Cidade:</b> {d.city || "—"}
-            </span>
-            <span>
-              <b>Responsável:</b> {d.responsibleName || "—"}
-            </span>
+          <div className="text-right">
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: ACCENT }}>
+              Diagnóstico rápido
+            </div>
+            <div className="mt-1 text-xl font-extrabold sm:text-2xl">{d.clientName || "Cliente"}</div>
+            <div className="mt-0.5 text-xs" style={{ color: "#aebfc9" }}>
+              {formatarData(d.createdAt)}
+            </div>
           </div>
         </header>
 
-        {/* Resumo rápido */}
-        <section>
-          <SectionTitle eyebrow="Resumo" title="Resumo rápido" />
-          <p className="mb-4 text-sm leading-relaxed text-[#4b5563]">{DEFAULT_TEXTS.summaryIntro}</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
-                Primeira impressão
+        <div className="flex flex-col gap-10 px-8 py-8 sm:px-11">
+          <div className="flex flex-col gap-4">
+            <p className="max-w-lg text-sm" style={{ color: MUTED }}>
+              Pontos de risco e oportunidades para melhorar a percepção do perfil e gerar mais contatos.
+            </p>
+
+            <div
+              className="grid grid-cols-1 gap-x-8 gap-y-1.5 rounded-2xl border bg-white p-5 text-sm sm:grid-cols-3"
+              style={{ borderColor: LINE, color: "#111827" }}
+            >
+              <span>
+                <b>Instagram:</b> {d.instagramHandle ? `@${d.instagramHandle.replace(/^@/, "")}` : "—"}
               </span>
-              <p className="mt-1 text-sm text-[#111827]">{d.summary.firstImpression || "—"}</p>
-            </div>
-            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
-                Maior risco percebido
+              <span>
+                <b>Segmento:</b> {d.segment || "—"}
               </span>
-              <p className="mt-1 text-sm text-[#111827]">{d.summary.mainRisk || "—"}</p>
-            </div>
-            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
-                Maior oportunidade percebida
+              <span>
+                <b>Cidade:</b> {d.city || "—"}
               </span>
-              <p className="mt-1 text-sm text-[#111827]">{d.summary.mainOpportunity || "—"}</p>
-            </div>
-            <div className="avoid-break rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <span className="text-xs font-semibold tracking-wide text-[#4b5563] uppercase">
-                Objetivo sugerido
+              <span>
+                <b>Objetivo do perfil:</b> {d.profileObjective || "—"}
               </span>
-              <p className="mt-1 text-sm text-[#111827]">{d.summary.suggestedObjective || "—"}</p>
+              <span>
+                <b>Responsável:</b> {d.responsibleName || "—"}
+              </span>
             </div>
           </div>
-        </section>
 
-        {/* Pontos de risco */}
-        {riscosOrdenados.length > 0 && (
+          {/* Resumo rápido */}
           <section>
-            <SectionTitle eyebrow="Atenção" title="Pontos de risco" />
-            <div className="flex flex-col gap-3">
-              {riscosOrdenados.map((risco) => (
-                <PointCard
-                  key={risco.id}
-                  images={risco.images}
-                  type={risco.type}
-                  title={risco.title}
-                  comment={risco.comment}
-                  fields={[
-                    { label: "Impacto", value: risco.impact },
-                    { label: "Sugestão rápida", value: risco.quickSuggestion },
-                  ]}
-                  borderColor="#f0d9b5"
-                  bgColor="#fdf8f0"
-                  typeBg="rgba(8, 42, 62, 0.05)"
-                  typeColor="#082a3e"
-                />
-              ))}
+            <SectionTitle eyebrow="Resumo" title="Resumo rápido" />
+            <div
+              className="avoid-break mb-4 rounded-2xl border p-4 text-sm leading-relaxed"
+              style={{ backgroundColor: BG_SOFT, borderColor: LINE, borderLeft: `4px solid ${ACCENT}`, color: "#111827" }}
+            >
+              {DEFAULT_TEXTS.summaryIntro}
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="avoid-break rounded-xl border bg-white p-4" style={{ borderColor: LINE }}>
+                <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: MUTED }}>
+                  Primeira impressão
+                </span>
+                <p className="mt-1 text-sm" style={{ color: "#111827" }}>
+                  {d.summary.firstImpression || "—"}
+                </p>
+              </div>
+              <div className="avoid-break rounded-xl border bg-white p-4" style={{ borderColor: LINE }}>
+                <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: MUTED }}>
+                  Maior risco percebido
+                </span>
+                <p className="mt-1 text-sm" style={{ color: "#111827" }}>
+                  {d.summary.mainRisk || "—"}
+                </p>
+              </div>
+              <div className="avoid-break rounded-xl border bg-white p-4" style={{ borderColor: LINE }}>
+                <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: MUTED }}>
+                  Maior oportunidade percebida
+                </span>
+                <p className="mt-1 text-sm" style={{ color: "#111827" }}>
+                  {d.summary.mainOpportunity || "—"}
+                </p>
+              </div>
+              <div className="avoid-break rounded-xl border bg-white p-4" style={{ borderColor: LINE }}>
+                <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: MUTED }}>
+                  Objetivo sugerido
+                </span>
+                <p className="mt-1 text-sm" style={{ color: "#111827" }}>
+                  {d.summary.suggestedObjective || "—"}
+                </p>
+              </div>
             </div>
           </section>
-        )}
 
-        {/* Pontos de melhora */}
-        {melhoriasOrdenadas.length > 0 && (
-          <section>
-            <SectionTitle eyebrow="Oportunidade" title="Pontos de melhora" />
-            <div className="flex flex-col gap-3">
-              {melhoriasOrdenadas.map((melhoria) => (
-                <PointCard
-                  key={melhoria.id}
-                  images={melhoria.images}
-                  type={melhoria.type}
-                  title={melhoria.title}
-                  comment={melhoria.comment}
-                  fields={[
-                    { label: "Benefício esperado", value: melhoria.expectedBenefit },
-                    { label: "Ação recomendada", value: melhoria.recommendedAction },
-                  ]}
-                  borderColor="#bdeaef"
-                  bgColor="#f0fbfc"
-                  typeBg="rgba(9, 177, 194, 0.1)"
-                  typeColor="#09b1c2"
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Próximo passo */}
-        <section className="avoid-break rounded-2xl p-8 text-white" style={{ backgroundColor: "#082a3e" }}>
-          <p className="text-sm leading-relaxed whitespace-pre-line text-white/85">{d.meeting.invitationText}</p>
-          <p className="mt-4 text-xl font-semibold">{d.meeting.ctaText}</p>
-          {d.meeting.buttonText && (
-            <span className="mt-4 inline-block w-fit rounded-full bg-[#09b1c2] px-6 py-3 text-sm font-semibold text-white">
-              {d.meeting.buttonText}
-            </span>
+          {/* Pontos de risco */}
+          {riscosOrdenados.length > 0 && (
+            <section>
+              <SectionTitle eyebrow="Atenção" title="Pontos de risco" />
+              <div className="flex flex-col gap-3">
+                {riscosOrdenados.map((risco) => (
+                  <PointCard
+                    key={risco.id}
+                    images={risco.images}
+                    type={risco.type}
+                    title={risco.title}
+                    comment={risco.comment}
+                    fields={[
+                      { label: "Impacto", value: risco.impact },
+                      { label: "Sugestão rápida", value: risco.quickSuggestion },
+                    ]}
+                    borderColor="#f0d9b5"
+                    bgColor="#fdf8f0"
+                    typeBg="rgba(8, 42, 62, 0.05)"
+                    typeColor={INK}
+                  />
+                ))}
+              </div>
+            </section>
           )}
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/70">
-            {d.meeting.whatsapp && <span>WhatsApp: {d.meeting.whatsapp}</span>}
-            {d.meeting.runnerInstagram && <span>Instagram: @{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
-            {d.meeting.meetingLink && <span>{d.meeting.meetingLink}</span>}
-          </div>
-        </section>
 
-        {/* Rodapé */}
-        <footer className="avoid-break flex flex-col items-center gap-2 border-t border-[#e5e7eb] pt-6 text-center">
-          <span className="text-xs font-semibold tracking-widest text-[#09b1c2] uppercase">
-            Runner Marketing
-          </span>
-          <p className="max-w-md text-sm text-[#4b5563]">{d.meeting.finalPhrase}</p>
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[#4b5563]">
-            {d.meeting.runnerInstagram && <span>@{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
-            {d.meeting.whatsapp && <span>{d.meeting.whatsapp}</span>}
-          </div>
-        </footer>
+          {/* Pontos de melhora */}
+          {melhoriasOrdenadas.length > 0 && (
+            <section>
+              <SectionTitle eyebrow="Oportunidade" title="Pontos de melhora" />
+              <div className="flex flex-col gap-3">
+                {melhoriasOrdenadas.map((melhoria) => (
+                  <PointCard
+                    key={melhoria.id}
+                    images={melhoria.images}
+                    type={melhoria.type}
+                    title={melhoria.title}
+                    comment={melhoria.comment}
+                    fields={[
+                      { label: "Benefício esperado", value: melhoria.expectedBenefit },
+                      { label: "Ação recomendada", value: melhoria.recommendedAction },
+                    ]}
+                    borderColor="#bdeaef"
+                    bgColor="#f0fbfc"
+                    typeBg="rgba(9, 177, 194, 0.1)"
+                    typeColor={ACCENT}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Próximo passo */}
+          <section className="avoid-break rounded-2xl p-8 text-white" style={{ backgroundColor: INK }}>
+            <p className="text-sm leading-relaxed whitespace-pre-line text-white/85">{d.meeting.invitationText}</p>
+            <p className="mt-4 text-xl font-semibold">{d.meeting.ctaText}</p>
+            {d.meeting.buttonText && (
+              <span
+                className="mt-4 inline-block w-fit rounded-full px-6 py-3 text-sm font-semibold text-white"
+                style={{ backgroundColor: ACCENT }}
+              >
+                {d.meeting.buttonText}
+              </span>
+            )}
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/70">
+              {d.meeting.whatsapp && <span>WhatsApp: {d.meeting.whatsapp}</span>}
+              {d.meeting.runnerInstagram && <span>Instagram: @{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
+              {d.meeting.meetingLink && <span>{d.meeting.meetingLink}</span>}
+            </div>
+          </section>
+
+          {/* Rodapé */}
+          <footer
+            className="avoid-break flex flex-col items-center gap-2 border-t pt-6 text-center"
+            style={{ borderColor: LINE }}
+          >
+            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: ACCENT }}>
+              Runner Marketing
+            </span>
+            <p className="max-w-md text-sm" style={{ color: MUTED }}>
+              {d.meeting.finalPhrase}
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs" style={{ color: MUTED }}>
+              {d.meeting.runnerInstagram && <span>@{d.meeting.runnerInstagram.replace(/^@/, "")}</span>}
+              {d.meeting.whatsapp && <span>{d.meeting.whatsapp}</span>}
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );

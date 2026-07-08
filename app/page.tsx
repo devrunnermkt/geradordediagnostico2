@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { FileUp, FolderOpen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { RunnerLogo } from "@/components/RunnerLogo";
 import { ConfirmDialog } from "@/components/diagnostic/ConfirmDialog";
 import { DiagnosticCard } from "@/components/diagnostic/DiagnosticCard";
 import { EmptyState } from "@/components/diagnostic/EmptyState";
@@ -79,80 +80,85 @@ export default function HomePage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-14">
-      <header className="flex flex-col items-start gap-4">
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-widest text-secondary">
-            Runner Marketing
-          </span>
-          <h1 className="font-heading text-3xl font-semibold text-foreground">Runner Insight</h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Monte diagnósticos estratégicos de Instagram para possíveis clientes: preencha os dados,
-            suba prints do perfil e gere uma prévia profissional pronta para imprimir ou salvar em PDF.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={aoCriarNovo}>
-            <Plus className="h-4 w-4" />
-            Criar novo diagnóstico
-          </Button>
-          <Button variant="outline" onClick={aoImportarClick}>
-            <FileUp className="h-4 w-4" />
-            Importar projeto
-          </Button>
-          <input
-            ref={inputImportarRef}
-            type="file"
-            accept="application/json"
-            className="hidden"
-            onChange={aoSelecionarArquivoImportado}
-          />
+    <div className="flex flex-1 flex-col">
+      <header className="sticky top-0 z-30 border-b border-border/80 bg-background/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <RunnerLogo />
         </div>
       </header>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Diagnósticos salvos neste navegador
-        </h2>
-
-        {!carregado ? null : diagnosticos.length === 0 ? (
-          <EmptyState
-            icon={FolderOpen}
-            title="Nenhum diagnóstico ainda"
-            description="Crie o primeiro diagnóstico ou importe um projeto salvo em JSON para começar."
-            action={
-              <Button size="sm" onClick={aoCriarNovo}>
-                <Plus className="h-4 w-4" />
-                Criar novo diagnóstico
-              </Button>
-            }
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {diagnosticos.map((diagnostico) => (
-              <DiagnosticCard
-                key={diagnostico.id}
-                summary={diagnostico}
-                onEdit={() => router.push(`/diagnostico/${diagnostico.id}`)}
-                onView={() => router.push(`/diagnostico/${diagnostico.id}/preview`)}
-                onDuplicate={() => aoDuplicar(diagnostico.id)}
-                onExport={() => aoExportar(diagnostico.id)}
-                onDelete={() => setIdParaExcluir(diagnostico.id)}
-              />
-            ))}
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-14">
+        <div className="flex flex-col items-start gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="font-heading text-3xl font-semibold text-foreground">Runner Insight</h1>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              Monte diagnósticos estratégicos de Instagram para possíveis clientes: preencha os dados,
+              suba prints do perfil e gere uma prévia profissional pronta para imprimir ou salvar em PDF.
+            </p>
           </div>
-        )}
-      </section>
 
-      <ConfirmDialog
-        open={idParaExcluir !== null}
-        onOpenChange={(open) => !open && setIdParaExcluir(null)}
-        title="Excluir diagnóstico"
-        description="Essa ação não pode ser desfeita. O diagnóstico será removido permanentemente deste navegador."
-        confirmLabel="Excluir"
-        onConfirm={aoConfirmarExclusao}
-      />
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={aoCriarNovo}>
+              <Plus className="h-4 w-4" />
+              Criar novo diagnóstico
+            </Button>
+            <Button variant="outline" onClick={aoImportarClick}>
+              <FileUp className="h-4 w-4" />
+              Importar projeto
+            </Button>
+            <input
+              ref={inputImportarRef}
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={aoSelecionarArquivoImportado}
+            />
+          </div>
+        </div>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Diagnósticos salvos neste navegador
+          </h2>
+
+          {!carregado ? null : diagnosticos.length === 0 ? (
+            <EmptyState
+              icon={FolderOpen}
+              title="Nenhum diagnóstico ainda"
+              description="Crie o primeiro diagnóstico ou importe um projeto salvo em JSON para começar."
+              action={
+                <Button size="sm" onClick={aoCriarNovo}>
+                  <Plus className="h-4 w-4" />
+                  Criar novo diagnóstico
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {diagnosticos.map((diagnostico) => (
+                <DiagnosticCard
+                  key={diagnostico.id}
+                  summary={diagnostico}
+                  onEdit={() => router.push(`/diagnostico/${diagnostico.id}`)}
+                  onView={() => router.push(`/diagnostico/${diagnostico.id}/preview`)}
+                  onDuplicate={() => aoDuplicar(diagnostico.id)}
+                  onExport={() => aoExportar(diagnostico.id)}
+                  onDelete={() => setIdParaExcluir(diagnostico.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <ConfirmDialog
+          open={idParaExcluir !== null}
+          onOpenChange={(open) => !open && setIdParaExcluir(null)}
+          title="Excluir diagnóstico"
+          description="Essa ação não pode ser desfeita. O diagnóstico será removido permanentemente deste navegador."
+          confirmLabel="Excluir"
+          onConfirm={aoConfirmarExclusao}
+        />
+      </div>
     </div>
   );
 }
